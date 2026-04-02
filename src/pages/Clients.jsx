@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import API from "../api/axios.js";
 import ClientForm from "../components/ClientForm";
 import Modal from "../components/ui/Modal";
+import { toast } from "sonner";
 
-import { Edit, Trash2, PlusCircle, Search } from "lucide-react";
+import { Edit, Trash2, PlusCircle, Search, AlertTriangle } from "lucide-react";
 
 import {
   Table,
@@ -31,17 +32,50 @@ export default function Clients() {
   }, []);
 
   // ❌ Delete
-  const deleteClient = async (id) => {
-    const confirmDelete = confirm("¿Eliminar cliente?");
-    if (!confirmDelete) return;
-
-    await API.delete(`/clients/${id}`);
-    fetchClients();
-  };
+  const deleteClient = (id) => {
+  const toastId = toast.custom((t) => (
+    <div
+      className={`bg-white shadow-lg border border-gray-200 rounded-lg p-4 max-w-sm w-full flex flex-col gap-4 ${
+        t.visible ? "animate-fadeIn" : "animate-fadeOut"
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <AlertTriangle className="w-5 h-5 text-red-600" />
+        <p className="text-gray-800 text-sm font-medium">
+          ¿Seguro que quieres eliminar este cliente?
+        </p>
+      </div>
+      <div className="flex justify-end gap-2 mt-2">
+        <button
+          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+          onClick={async () => {
+            try {
+              await API.delete(`/clients/${id}`);
+              fetchClients();
+              toast.success("Cliente eliminado con éxito");
+            } catch (error) {
+              toast.error("Error al eliminar el cliente");
+            } finally {
+              toast.dismiss(toastId); // cerramos este toast
+            }
+          }}
+        >
+          Sí
+        </button>
+        <button
+          className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+          onClick={() => toast.dismiss(toastId)}
+        >
+          No
+        </button>
+      </div>
+    </div>
+  ));
+};
 
   // 🔍 filtro
   const filteredClients = clients.filter((c) =>
-    (c.name || "").toLowerCase().includes(search.toLowerCase())
+    (c.name || "").toLowerCase().includes(search.toLowerCase()) || (c.identification || "").toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -94,6 +128,7 @@ export default function Clients() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Identificacion</TableHead>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Teléfono</TableHead>
@@ -104,6 +139,7 @@ export default function Clients() {
             <TableBody>
               {filteredClients.map((c) => (
                 <TableRow key={c._id}>
+                  <TableCell>{c.identification}</TableCell>
                   <TableCell>{c.name}</TableCell>
                   <TableCell>{c.email}</TableCell>
                   <TableCell>{c.phone}</TableCell>

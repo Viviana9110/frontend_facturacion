@@ -3,9 +3,11 @@ import API from "../api/axios";
 
 export default function ClientForm({ fetchClients, editing, setEditing }) {
   const [form, setForm] = useState({
+    identification: "",
     name: "",
     email: "",
     phone: "",
+    address: ""
   });
 
   const [errors, setErrors] = useState({});
@@ -15,18 +17,24 @@ export default function ClientForm({ fetchClients, editing, setEditing }) {
   useEffect(() => {
     if (editing) {
       setForm({
+        identification: editing.identification || "",
         name: editing.name || "",
         email: editing.email || "",
         phone: editing.phone || "",
+        address: editing.address || ""
       });
     } else {
-      setForm({ name: "", email: "", phone: "" });
+      setForm({ identification: "", name: "", email: "", phone: "", address: "" });
     }
   }, [editing]);
 
   // 🔍 Validación
   const validate = () => {
     const newErrors = {};
+
+    if (!form.identification.trim()){
+      newErrors.identification = "El documento es obligatorio";
+    }
 
     if (!form.name.trim()) {
       newErrors.name = "El nombre es obligatorio";
@@ -61,7 +69,7 @@ export default function ClientForm({ fetchClients, editing, setEditing }) {
 
       fetchClients();
       setEditing(null);
-      setForm({ name: "", email: "", phone: "" });
+      setForm({ identification: "", name: "", email: "", phone: "", address: "" });
 
     } catch (error) {
       console.error(error.response?.data || error.message);
@@ -73,6 +81,26 @@ export default function ClientForm({ fetchClients, editing, setEditing }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+
+      <div>
+        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+          Identificación
+        </label>
+
+        <input
+          type="text"
+          placeholder="Ej: 302222222"
+          value={form.identification}
+          onChange={(e) =>
+            setForm({ ...form, identification: e.target.value })
+          }
+          className="w-full mt-1 px-4 py-2 rounded-xl border 
+          bg-gray-50 dark:bg-gray-800 
+          text-gray-800 dark:text-white
+          outline-none focus:ring-2 focus:ring-indigo-500
+          border-gray-200 dark:border-gray-700"
+        />
+      </div>
 
       {/* 👤 NOMBRE */}
       <div>
@@ -143,6 +171,30 @@ export default function ClientForm({ fetchClients, editing, setEditing }) {
           outline-none focus:ring-2 focus:ring-indigo-500
           border-gray-200 dark:border-gray-700"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+          Dirección
+        </label>
+
+        <input
+          type="text"
+          placeholder="Ej: Cll 30 # 27 - 35"
+          value={form.address}
+          onChange={(e) =>
+            setForm({ ...form, address: e.target.value })
+          }
+          className={`w-full mt-1 px-4 py-2 rounded-xl border 
+          bg-gray-50 dark:bg-gray-800 
+          text-gray-800 dark:text-white
+          outline-none focus:ring-2 focus:ring-indigo-500
+          ${errors.address ? "border-red-500" : "border-gray-200 dark:border-gray-700"}`}
+        />
+
+        {errors.address && (
+          <p className="text-red-500 text-xs mt-1">{errors.address}</p>
+        )}
       </div>
 
       {/* ⚡ ACCIONES */}

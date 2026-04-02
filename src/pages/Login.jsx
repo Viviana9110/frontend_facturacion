@@ -37,7 +37,7 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
 
-      toast.success("Bienvenida 🚀");
+      toast.success("Bienvenid@ 🚀");
 
       setTimeout(() => {
         navigate("/dashboard");
@@ -52,17 +52,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
       
       {/* CARD */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 p-8">
 
         {/* HEADER */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
             Iniciar sesión
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Accede a tu panel de facturación
           </p>
         </div>
@@ -72,7 +72,7 @@ export default function Login() {
 
           {/* EMAIL */}
           <div>
-            <label className="text-sm text-gray-600">
+            <label className="text-sm text-gray-600 dark:text-gray-500">
               Email
             </label>
             <input
@@ -88,7 +88,7 @@ export default function Login() {
 
           {/* PASSWORD */}
           <div>
-            <label className="text-sm text-gray-600">
+            <label className="text-sm text-gray-600 dark:text-gray-500">
               Contraseña
             </label>
             <input

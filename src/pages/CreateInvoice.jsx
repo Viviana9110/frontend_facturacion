@@ -11,6 +11,11 @@ export default function CreateInvoice() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [date, setDate] = useState(
+    new Date().toISOString().substring(0, 10)
+  );
+  const [paymentMethod, setPaymentMethod] = useState("Efectivo");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,93 +52,164 @@ export default function CreateInvoice() {
     const exists = items.find((i) => i.productId === productId);
 
     if (exists) {
-      setItems(
-        items.map((i) =>
+      setItems((prev) =>
+        prev.map((i) =>
           i.productId === productId
             ? { ...i, quantity: i.quantity + 1 }
             : i
         )
       );
     } else {
-      setItems([...items, { productId, quantity: 1 }]);
+      setItems((prev) => [...prev, { productId, quantity: 1 }]);
     }
   };
 
   const updateQuantity = (index, quantity) => {
     if (quantity < 1) return;
 
-    const updated = [...items];
-    updated[index].quantity = quantity;
-    setItems(updated);
+    setItems((prev) => {
+      const updated = [...prev];
+      updated[index].quantity = quantity;
+      return updated;
+    });
   };
 
   const removeItem = (index) => {
-    setItems(items.filter((_, i) => i !== index));
+    setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
   const subtotal = items.reduce((acc, item) => {
     const product = products.find((p) => p._id === item.productId);
-    return acc + (product?.price || 0) * item.quantity;
+    return acc + (Number(product?.price) || 0) * item.quantity;
   }, 0);
 
   const iva = subtotal * 0.19;
   const total = subtotal + iva;
 
   const handleSubmit = async () => {
-  if (!clientId) return toast.warning("Selecciona un cliente");
-  if (items.length === 0) return toast.warning("Agrega productos");
+    if (!clientId) return toast.warning("Selecciona un cliente");
+    if (!selectedClient) return toast.warning("Cliente inválido");
+    if (items.length === 0)
+      return toast.warning("Agrega productos");
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    await API.post("/invoices", { clientId, items });
+      const payload = {
+        clientId,
+        items: items.map((i) => ({
+          productId: i.productId,
+          quantity: Number(i.quantity),
+        })),
+        date,
+        paymentMethod,
+      };
+     
 
-    toast.success("Factura creada exitosamente 🎉");
+      await API.post("/invoices", payload);
 
-    // ⏳ pequeño delay para que el usuario vea el toast
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1200);
+      toast.success("Factura creada exitosamente 🎉");
 
-  } catch (error) {
-    console.error(error);
-    toast.error("Error al crear la factura");
-  } finally {
-    setLoading(false);
-  }
-};
+      // 🔥 REDIRECCIÓN
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1200);
+
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.msg || "Error al crear la factura"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
 
-        <h1 className="text-3xl font-semibold mb-6">
-          Nueva Factura
-        </h1>
-
-        {/* CLIENTE */}
+        {/* HEADER */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mb-6">
-          <select
-            className="w-full border rounded-xl px-4 py-2 bg-white dark:bg-gray-900"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-          >
-            <option value="">Seleccionar cliente</option>
-            {clients.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex justify-between">
+            <div>
+              <h1 className="text-xl font-bold">TU EMPRESA S.A.S</h1>
+              <p className="text-sm text-gray-500">NIT: 900123456</p>
+              <p className="text-sm text-gray-500">Dirección: Colombia</p>
+            </div>
+
+            <div className="text-right">
+              <h2 className="text-lg font-semibold">FACTURA</h2>
+              <p className="text-sm text-gray-500">No. 0001</p>
+            </div>
+          </div>
+        </div>
+
+        {/* CLIENTE + FACTURA */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
+            <label className="text-sm text-gray-500">Cliente</label>
+
+            <select
+              className="w-full mt-2 border rounded-xl px-4 py-2 bg-white dark:bg-gray-900"
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+            >
+              <option value="">Seleccionar cliente</option>
+              {clients.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            {selectedClient && (
+              <div className="mt-4 text-sm space-y-1 text-gray-600 dark:text-gray-300">
+                <p><strong>Nombre:</strong> {selectedClient.name}</p>
+                <p><strong>Email:</strong> {selectedClient.email}</p>
+                <p><strong>Teléfono:</strong> {selectedClient.phone || "N/A"}</p>
+                <p><strong>ID:</strong> {selectedClient.identification || "N/A"}</p>
+                <p><strong>Dirección:</strong> {selectedClient.address || "N/A"}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
+            <label className="text-sm text-gray-500">Fecha</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full mt-2 border rounded-xl px-4 py-2 bg-white dark:bg-gray-900"
+            />
+
+            <label className="text-sm text-gray-500 mt-4 block">
+              Método de pago
+            </label>
+            <select
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="w-full mt-2 border rounded-xl px-4 py-2 bg-white dark:bg-gray-900"
+            >
+              <option>Efectivo</option>
+              <option>Transferencia</option>
+              <option>Tarjeta</option>
+              <option>Crédito</option>
+            </select>
+          </div>
         </div>
 
         {/* PRODUCTOS */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mb-6">
           <select
             className="w-full border rounded-xl px-4 py-2 bg-white dark:bg-gray-900"
-            onChange={(e) => addProduct(e.target.value)}
+            onChange={(e) => {
+              addProduct(e.target.value);
+              e.target.value = "";
+            }}
           >
-            <option value="">Seleccionar producto</option>
+            <option value="">Agregar producto</option>
             {products.map((p) => (
               <option key={p._id} value={p._id}>
                 {p.name} - ${p.price}
@@ -144,55 +220,56 @@ export default function CreateInvoice() {
 
         {/* TABLA */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mb-6">
-          {items.length === 0 ? (
-            <p className="text-center text-gray-500">
-              No hay productos
-            </p>
-          ) : (
-            <table className="w-full">
-              <tbody>
-                {items.map((item, index) => {
-                  const product = products.find(
-                    (p) => p._id === item.productId
-                  );
+          <table className="w-full text-sm">
+            <thead className="text-gray-500 border-b">
+              <tr>
+                <th>Producto</th>
+                <th>Cant</th>
+                <th>Precio</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
 
-                  return (
-                    <tr key={index}>
-                      <td>{product?.name}</td>
-                      <td>
-                        <input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) =>
-                            updateQuantity(index, Number(e.target.value))
-                          }
-                          className="w-16 border rounded"
-                        />
-                      </td>
-                      <td>${product?.price}</td>
-                      <td>
-                        ${(product?.price || 0) * item.quantity}
-                      </td>
-                      <td>
-                        <button onClick={() => removeItem(index)}>
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
+            <tbody>
+              {items.map((item, index) => {
+                const product = products.find((p) => p._id === item.productId);
+
+                return (
+                  <tr key={index} className="border-b">
+                    <td>{product?.name}</td>
+
+                    <td>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateQuantity(index, Number(e.target.value))
+                        }
+                        className="w-16 border rounded text-center"
+                      />
+                    </td>
+
+                    <td>${product?.price}</td>
+                    <td>${(product?.price || 0) * item.quantity}</td>
+
+                    <td>
+                      <button onClick={() => removeItem(index)}>
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {/* TOTALES */}
-        <div className="text-right mb-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border text-right mb-6">
           <p>Subtotal: ${subtotal}</p>
-          <p>IVA: ${iva.toFixed(2)}</p>
-          <p className="text-xl font-bold">
-            Total: ${total.toFixed(2)}
-          </p>
+          <p>IVA (19%): ${iva.toFixed(2)}</p>
+          <p className="text-2xl font-bold">Total: ${total.toFixed(2)}</p>
         </div>
 
         {/* BOTÓN */}

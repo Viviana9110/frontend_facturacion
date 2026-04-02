@@ -1,11 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import {
-  PlusCircle,
-  ArrowUpRight,
-  ArrowDownRight,
-  Eye
-} from "lucide-react";
+import { PlusCircle, ArrowUpRight, ArrowDownRight, Eye } from "lucide-react";
 import Modal from "../components/ui/Modal";
 import InvoicePreview from "../components/InvoicePreview";
 
@@ -56,9 +51,7 @@ export default function Dashboard() {
 
     if (range === "today") {
       filteredData = invoices.filter(
-        (inv) =>
-          new Date(inv.createdAt).toDateString() ===
-          now.toDateString()
+        (inv) => new Date(inv.createdAt).toDateString() === now.toDateString(),
       );
     }
 
@@ -66,9 +59,7 @@ export default function Dashboard() {
       const last7 = new Date();
       last7.setDate(now.getDate() - 7);
 
-      filteredData = invoices.filter(
-        (inv) => new Date(inv.createdAt) >= last7
-      );
+      filteredData = invoices.filter((inv) => new Date(inv.createdAt) >= last7);
     }
 
     if (range === "30d") {
@@ -76,7 +67,7 @@ export default function Dashboard() {
       last30.setDate(now.getDate() - 30);
 
       filteredData = invoices.filter(
-        (inv) => new Date(inv.createdAt) >= last30
+        (inv) => new Date(inv.createdAt) >= last30,
       );
     }
 
@@ -113,7 +104,6 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-800 dark:text-gray-100">
-
       {/* HEADER */}
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -122,8 +112,6 @@ export default function Dashboard() {
             Análisis avanzado de tu negocio
           </p>
         </div>
-
-       
       </div>
 
       {/* FILTROS */}
@@ -147,16 +135,21 @@ export default function Dashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
           <p className="text-sm text-gray-500">Ingresos</p>
           <h2 className="text-2xl font-semibold mt-2">
             ${total.toLocaleString()}
           </h2>
-          <span className={`text-xs flex items-center gap-1 mt-2 ${
-            isPositive ? "text-green-500" : "text-red-500"
-          }`}>
-            {isPositive ? <ArrowUpRight size={14}/> : <ArrowDownRight size={14}/>}
+          <span
+            className={`text-xs flex items-center gap-1 mt-2 ${
+              isPositive ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {isPositive ? (
+              <ArrowUpRight size={14} />
+            ) : (
+              <ArrowDownRight size={14} />
+            )}
             {growth.toFixed(1)}%
           </span>
         </div>
@@ -168,15 +161,13 @@ export default function Dashboard() {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
           <p className="text-sm text-gray-500">Promedio</p>
-          <h2 className="text-2xl font-semibold mt-2">
-            ${avg.toFixed(2)}
-          </h2>
+          <h2 className="text-2xl font-semibold mt-2">${avg.toFixed(2)}</h2>
         </div>
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
           <p className="text-sm text-gray-500">Clientes únicos</p>
           <h2 className="text-2xl font-semibold mt-2">
-            {new Set(filtered.map(i => i.client?._id)).size}
+            {new Set(filtered.map((i) => i.client?._id)).size}
           </h2>
         </div>
       </div>
@@ -188,16 +179,19 @@ export default function Dashboard() {
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Line type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={3} />
+            <Line
+              type="monotone"
+              dataKey="total"
+              stroke="#6366f1"
+              strokeWidth={3}
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* 🧾 TABLA PRO */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
-        <h2 className="text-lg font-semibold mb-4">
-          Historial de facturas
-        </h2>
+        <h2 className="text-lg font-semibold mb-4">Historial de facturas</h2>
 
         {loading ? (
           <p>Cargando...</p>
@@ -205,6 +199,7 @@ export default function Dashboard() {
           <table className="w-full text-sm">
             <thead className="text-left text-gray-500 border-b dark:border-gray-700">
               <tr>
+                <th className="p-3"># Factura</th>
                 <th className="p-3">Cliente</th>
                 <th className="p-3">Total</th>
                 <th className="p-3">Fecha</th>
@@ -218,6 +213,9 @@ export default function Dashboard() {
                   key={inv._id}
                   className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                 >
+                  <td className="p-3 font-semibold text-indigo-600">
+                    {inv.dianNumber ? inv.dianNumber : "Sin número"}
+                  </td>
                   <td className="p-3">{inv.client?.name}</td>
                   <td className="p-3 font-medium">${inv.total}</td>
                   <td className="p-3">
@@ -229,7 +227,7 @@ export default function Dashboard() {
                         setSelectedInvoice(inv);
                         setIsModalOpen(true);
                       }}
-                      className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+                      className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 cursor-pointer"
                     >
                       <Eye size={16} />
                       Ver
@@ -240,6 +238,7 @@ export default function Dashboard() {
             </tbody>
           </table>
         )}
+        
       </div>
 
       {/* 🔥 MODAL FACTURA */}
@@ -250,7 +249,6 @@ export default function Dashboard() {
       >
         <InvoicePreview invoice={selectedInvoice} />
       </Modal>
-
     </div>
   );
 }
