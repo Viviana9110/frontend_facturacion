@@ -102,6 +102,14 @@ export default function Dashboard() {
     total: chartMap[date],
   }));
 
+  const formatCOP = (value) => {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+  }).format(value);
+};
+
   return (
     <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-800 dark:text-gray-100">
       {/* HEADER */}
@@ -138,7 +146,7 @@ export default function Dashboard() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
           <p className="text-sm text-gray-500">Ingresos</p>
           <h2 className="text-2xl font-semibold mt-2">
-            ${total.toLocaleString()}
+            {formatCOP(total)}
           </h2>
           <span
             className={`text-xs flex items-center gap-1 mt-2 ${
@@ -161,7 +169,7 @@ export default function Dashboard() {
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
           <p className="text-sm text-gray-500">Promedio</p>
-          <h2 className="text-2xl font-semibold mt-2">${avg.toFixed(2)}</h2>
+          <h2 className="text-2xl font-semibold mt-2">{formatCOP(avg)}</h2>
         </div>
 
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
@@ -217,7 +225,7 @@ export default function Dashboard() {
                     {inv.dianNumber ? inv.dianNumber : "Sin número"}
                   </td>
                   <td className="p-3">{inv.client?.name}</td>
-                  <td className="p-3 font-medium">${inv.total}</td>
+                  <td className="p-3 font-medium">{formatCOP(inv.total)}</td>
                   <td className="p-3">
                     {new Date(inv.createdAt).toLocaleDateString()}
                   </td>
