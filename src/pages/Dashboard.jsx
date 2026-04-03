@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import API from "../api/axios";
 import { PlusCircle, ArrowUpRight, ArrowDownRight, Eye } from "lucide-react";
-import Modal from "../components/ui/Modal";
+import Modal from "./components/ui/Modal";
 import InvoicePreview from "../components/InvoicePreview";
 
 import {

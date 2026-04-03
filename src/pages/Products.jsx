@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 import ProductForm from "../components/ProductForm";
-import Modal from "../components/ui/Modal";
+import Modal from "./components/ui/Modal";
 
 import {
   Edit,

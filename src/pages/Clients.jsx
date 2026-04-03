@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios.js";
 import ClientForm from "../components/ClientForm";
-import Modal from "../components/ui/Modal";
+import Modal from "./components/ui/Modal";
 import { toast } from "sonner";
 
 import { Edit, Trash2, PlusCircle, Search, AlertTriangle } from "lucide-react";
