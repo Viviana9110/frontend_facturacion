@@ -34,7 +34,7 @@ export default function Sidebar() {
           <img src="../../public/logo-white.png" className="w-4"/>
         </div>
         <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-          Facturación l
+          Facturación
         </h1>
       </div>
 
