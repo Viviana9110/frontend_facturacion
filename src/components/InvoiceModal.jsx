@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import API from "../api/axios";
 
 export default function InvoiceModal({ invoiceId, onClose }) {
   const [invoice, setInvoice] = useState(null);
@@ -12,8 +13,8 @@ export default function InvoiceModal({ invoiceId, onClose }) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.get(
-        `http://localhost:3000/api/invoices/${invoiceId}`,
+      const res = await API.get(
+        `/invoices/${invoiceId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`

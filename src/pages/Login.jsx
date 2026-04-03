@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import API from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -30,8 +31,8 @@ export default function Login() {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/login",
+      const res = await API.post(
+        "/auth/login",
         form
       );
 
