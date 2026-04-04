@@ -13,10 +13,10 @@ export default function Layout() {
   const hideSidebar = location.pathname === "/";
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
       {!hideSidebar && <Sidebar />}
 
-      <div className="flex-1">
+      <div className="flex-1 lg:ml-64">
         <Toaster richColors position="top-right" />
 
         <Routes>

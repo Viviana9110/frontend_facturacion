@@ -1,26 +1,43 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useRef } from "react";
 import API from "../api/axios";
 
 export default function InvoiceModal({ invoiceId, onClose }) {
   const [invoice, setInvoice] = useState(null);
+  const [scale, setScale] = useState(1);
+
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (invoiceId) fetchInvoice();
   }, [invoiceId]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (!containerRef.current) return;
+
+      const containerWidth = containerRef.current.offsetWidth;
+
+      const baseWidth = 420; // ancho original de tu factura
+      const newScale = Math.min(1, containerWidth / baseWidth);
+
+      setScale(newScale);
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const fetchInvoice = async () => {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await API.get(
-        `/invoices/${invoiceId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const res = await API.get(`/invoices/${invoiceId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       setInvoice(res.data);
     } catch (error) {
@@ -31,84 +48,128 @@ export default function InvoiceModal({ invoiceId, onClose }) {
   if (!invoice) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-start pt-4 z-50 p-4">
 
-      <div className="bg-white w-full max-w-4xl rounded-xl p-6 overflow-y-auto max-h-[90vh]">
+      {/* MODAL */}
+      <div
+        ref={containerRef}
+        className="bg-white w-full max-w-md rounded-xl shadow-xl flex flex-col max-h-[92vh]"
+      >
 
         {/* HEADER */}
-        <div className="flex justify-between mb-6 border-b pb-4">
+        <div className="flex justify-between items-center px-4 py-3 border-b">
+
           <div>
-            <h1 className="text-xl font-bold">FACTURA ELECTRÓNICA</h1>
-            <p className="text-sm">DIAN</p>
+            <h1 className="text-lg font-bold">Factura</h1>
+            <p className="text-xs text-gray-500">
+              Completa la información del producto
+            </p>
           </div>
 
           <button
             onClick={onClose}
-            className="text-red-500 text-lg"
+            className="text-gray-400 hover:text-white transition"
           >
             ✕
           </button>
+
         </div>
 
-        {/* EMPRESA */}
-        <div className="flex justify-between items-start">
-  <div>
-    <h2 className="text-xl font-bold">Factura Electrónica</h2>
-    <p>No: {invoice.dianNumber}</p>
-  </div>
+        {/* CONTENIDO */}
+        <div className="px-4 py-4 overflow-y-auto flex justify-center">
 
-  <img
-    src={invoice.qrCode}
-    className="w-32"
-  />
-</div>
+          {/* FACTURA ESCALADA AUTOMÁTICAMENTE */}
+          <div
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: "top center"
+            }}
+          >
 
-        {/* CLIENTE */}
-        <div className="mb-6 border p-4 rounded bg-gray-50">
-          <h3 className="font-bold mb-2">Datos del Cliente</h3>
+            <div className="bg-gray-100 text-black w-[420px] p-5 rounded-lg text-sm">
 
-          <div className="grid grid-cols-2 text-sm gap-2">
-            <p><strong>Nombre:</strong> {invoice.client?.name}</p>
-            <p><strong>Email:</strong> {invoice.client?.email}</p>
-            <p><strong>Teléfono:</strong> {invoice.client?.phone}</p>
-            <p><strong>ID:</strong> {invoice.client?.identification}</p>
+              {/* HEADER FACTURA */}
+              <div className="flex justify-between mb-4">
+
+                <div>
+                  <h1 className="text-base font-bold">
+                    FACTURA ELECTRÓNICA DE VENTA
+                  </h1>
+
+                  <p><strong>No:</strong> {invoice.dianNumber}</p>
+                  <p><strong>Fecha:</strong> {new Date(invoice.createdAt).toLocaleDateString()}</p>
+                </div>
+
+                <div className="text-right text-xs">
+                  <h2 className="font-bold">Tu Empresa SAS</h2>
+                  <p>NIT: 900123456-7</p>
+                  <p>Responsable de IVA</p>
+                </div>
+
+              </div>
+
+              {/* CLIENTE */}
+              <div className="mb-4">
+                <h2 className="font-semibold mb-1">Cliente</h2>
+                <p><strong>Nombre:</strong> {invoice.client?.name}</p>
+                <p><strong>Email:</strong> {invoice.client?.email}</p>
+                <p><strong>Tel:</strong> {invoice.client?.phone}</p>
+              </div>
+
+              {/* TABLA */}
+              <table className="w-full text-sm mb-4">
+
+                <thead className="bg-gray-300">
+                  <tr>
+                    <th className="p-1 text-left">Producto</th>
+                    <th>Cant</th>
+                    <th>Precio</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {invoice.items.map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.product?.name}</td>
+                      <td className="text-center">{item.quantity}</td>
+                      <td className="text-right">${item.price.toLocaleString()}</td>
+                      <td className="text-right">
+                        ${(item.price * item.quantity).toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+
+              {/* TOTALES */}
+              <div className="text-right text-sm">
+
+                <p>Subtotal: ${invoice.subtotal.toLocaleString()}</p>
+                <p>IVA (19%): ${invoice.tax.toLocaleString()}</p>
+
+                <h2 className="font-bold">
+                  Total: ${invoice.total.toLocaleString()}
+                </h2>
+
+              </div>
+
+              {/* QR */}
+              {invoice.qrCode && (
+                <div className="mt-4 flex justify-center">
+                  <img src={invoice.qrCode} className="w-20" />
+                </div>
+              )}
+
+            </div>
+
           </div>
-        </div>
 
-        {/* TABLA */}
-        <table className="w-full border mb-6 text-sm">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-2">Producto</th>
-              <th>Cant</th>
-              <th>Precio</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {invoice.items.map((item, i) => (
-              <tr key={i} className="text-center border-b">
-                <td>{item.product?.name}</td>
-                <td>{item.quantity}</td>
-                <td>${item.price}</td>
-                <td>${item.price * item.quantity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* TOTALES */}
-        <div className="text-right">
-          <p>Subtotal: ${invoice.subtotal}</p>
-          <p>IVA (19%): ${invoice.tax}</p>
-
-          <h2 className="text-xl font-bold">
-            Total: ${invoice.total}
-          </h2>
         </div>
 
       </div>
+
     </div>
   );
 }

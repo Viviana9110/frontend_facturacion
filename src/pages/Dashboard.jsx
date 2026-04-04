@@ -14,6 +14,8 @@ import {
 import Modal from "../components/ui/Modal.jsx";
 import InvoicePreview from "../components/InvoicePreview";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   LineChart,
   Line,
@@ -55,10 +57,8 @@ export default function Dashboard() {
     fetchInvoices();
   }, [fetchInvoices]);
 
-  // FILTRO POR FECHA
   const filtered = useMemo(() => {
     const now = new Date();
-
     let data = invoices;
 
     if (range === "today") {
@@ -71,39 +71,30 @@ export default function Dashboard() {
     if (range === "7d") {
       const last = new Date();
       last.setDate(now.getDate() - 7);
-
       data = invoices.filter((inv) => new Date(inv.createdAt) >= last);
     }
 
     if (range === "30d") {
       const last = new Date();
       last.setDate(now.getDate() - 30);
-
       data = invoices.filter((inv) => new Date(inv.createdAt) >= last);
     }
 
-    // búsqueda
     if (search) {
       data = data.filter((inv) =>
         inv.client?.name?.toLowerCase().includes(search.toLowerCase()),
       );
     }
 
-    // ordenamiento
-    if (sort === "total") {
-      data = [...data].sort((a, b) => b.total - a.total);
-    }
-
-    if (sort === "date") {
+    if (sort === "total") data = [...data].sort((a, b) => b.total - a.total);
+    if (sort === "date")
       data = [...data].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
-    }
 
     return data;
   }, [invoices, range, search, sort]);
 
-  // KPIs
   const total = filtered.reduce((acc, i) => acc + (i.total || 0), 0);
   const count = filtered.length;
   const avg = count ? total / count : 0;
@@ -118,7 +109,6 @@ export default function Dashboard() {
 
   const isPositive = growth >= 0;
 
-  // CHART
   const chartMap = filtered.reduce((acc, inv) => {
     const date = new Date(inv.createdAt).toLocaleDateString();
     if (!acc[date]) acc[date] = 0;
@@ -139,50 +129,55 @@ export default function Dashboard() {
     }).format(value);
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-950 min-h-screen text-gray-800 dark:text-gray-100">
-      
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <p className="text-gray-500 text-sm">
-            Análisis avanzado de tu negocio
-          </p>
+    <div className="p-6 bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
+
+      {/* HEADER STICKY */}
+      <div className="sticky top-0 z-10 backdrop-blur bg-gray-50/70 dark:bg-gray-950/70 pb-6 mb-6 pl-12 lg:pl-0">
+
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+          <div>
+            <h1 className="text-3xl font-semibold">Dashboard</h1>
+            <p className="text-gray-500 text-sm">
+              Análisis avanzado de tu negocio
+            </p>
+          </div>
+
+          <div className="relative w-full md:w-72">
+            <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+
+            <input
+              placeholder="Buscar cliente..."
+              className="w-full pl-9 pr-4 py-2 rounded-xl border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
         </div>
 
-        {/* BUSCADOR */}
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-          <input
-            placeholder="Buscar cliente..."
-            className="pl-9 pr-4 py-2 rounded-xl border bg-white dark:bg-gray-800"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* FILTROS */}
+        <div className="flex w-full md:w-auto bg-gray-200 dark:bg-gray-800 p-1 rounded-xl mt-2">
+          {["today", "7d", "30d"].map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm transition ${
+                range === r
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-600"
+              }`}
+            >
+              {r === "today" && "Hoy"}
+              {r === "7d" && "7 días"}
+              {r === "30d" && "30 días"}
+            </button>
+          ))}
         </div>
-      </div>
 
-      {/* FILTROS */}
-      <div className="inline-flex bg-gray-200 dark:bg-gray-800 p-1 rounded-xl mb-6">
-        {["today", "7d", "30d"].map((r) => (
-          <button
-            key={r}
-            onClick={() => setRange(r)}
-            className={`px-4 py-2 rounded-lg text-sm transition ${
-              range === r
-                ? "bg-indigo-600 text-white"
-                : "text-gray-600"
-            }`}
-          >
-            {r === "today" && "Hoy"}
-            {r === "7d" && "7 días"}
-            {r === "30d" && "30 días"}
-          </button>
-        ))}
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
 
         <KPI icon={<DollarSign />} title="Ingresos" value={formatCOP(total)}>
           <span
@@ -208,7 +203,7 @@ export default function Dashboard() {
 
       {/* CHART */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mb-8">
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={260}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
@@ -254,17 +249,8 @@ export default function Dashboard() {
             No hay facturas en este periodo
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-left text-gray-500 border-b">
-              <tr>
-                <th className="p-3"># Factura</th>
-                <th className="p-3">Cliente</th>
-                <th className="p-3">Total</th>
-                <th className="p-3">Fecha</th>
-                <th className="p-3">Acción</th>
-              </tr>
-            </thead>
-
+          <div className="overflow-x-auto">
+             <table className="w-full text-sm">
             <tbody>
               {filtered.map((inv) => (
                 <tr
@@ -299,24 +285,38 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
+         
         )}
       </div>
 
-      {/* MODAL */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Factura"
-      >
-        <InvoicePreview invoice={selectedInvoice} />
-      </Modal>
+      {/* MODAL ANIMADO */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title="Factura"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <InvoicePreview invoice={selectedInvoice} />
+            </motion.div>
+          </Modal>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
 
 function KPI({ icon, title, value, children }) {
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border hover:shadow-md transition">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-default">
       <div className="flex items-center gap-3 text-gray-500 mb-2">
         {icon}
         <span className="text-sm">{title}</span>
