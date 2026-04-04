@@ -13,7 +13,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from "@/components/ui/table";
+} from "../components/ui/table";
 
 export default function Clients() {
   const [clients, setClients] = useState([]);
