@@ -125,7 +125,8 @@ export default function Clients() {
             No hay clientes
           </div>
         ) : (
-          <Table>
+          <div className="overflow-x-auto">
+             <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Identificacion</TableHead>
@@ -172,6 +173,8 @@ export default function Clients() {
               ))}
             </TableBody>
           </Table>
+          </div>
+         
         )}
       </div>
 
