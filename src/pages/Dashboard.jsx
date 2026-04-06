@@ -143,11 +143,9 @@ export default function Dashboard() {
     }).format(value);
 
   return (
-    <div className="px-4 py-6 sm:px-6 bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
-
+<div className="p-6 bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
       {/* HEADER */}
-      <div className="mb-8">
-
+      <div className="sticky top-0 z-10 backdrop-blur bg-gray-50/70 dark:bg-gray-950/70 pb-6 mb-6 pl-12 lg:pl-0">
         <h1 className="text-3xl font-semibold">
           Dashboard
         </h1>
