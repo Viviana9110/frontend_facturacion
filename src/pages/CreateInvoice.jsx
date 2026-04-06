@@ -11,9 +11,7 @@ export default function CreateInvoice() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [date, setDate] = useState(
-    new Date().toISOString().substring(0, 10)
-  );
+  const [date, setDate] = useState(new Date().toISOString().substring(0, 10));
   const [paymentMethod, setPaymentMethod] = useState("Efectivo");
 
   const navigate = useNavigate();
@@ -43,7 +41,7 @@ export default function CreateInvoice() {
 
   const selectedClient = useMemo(
     () => clients.find((c) => c._id === clientId),
-    [clientId, clients]
+    [clientId, clients],
   );
 
   const addProduct = (productId) => {
@@ -54,10 +52,8 @@ export default function CreateInvoice() {
     if (exists) {
       setItems((prev) =>
         prev.map((i) =>
-          i.productId === productId
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        )
+          i.productId === productId ? { ...i, quantity: i.quantity + 1 } : i,
+        ),
       );
     } else {
       setItems((prev) => [...prev, { productId, quantity: 1 }]);
@@ -89,8 +85,7 @@ export default function CreateInvoice() {
   const handleSubmit = async () => {
     if (!clientId) return toast.warning("Selecciona un cliente");
     if (!selectedClient) return toast.warning("Cliente inválido");
-    if (items.length === 0)
-      return toast.warning("Agrega productos");
+    if (items.length === 0) return toast.warning("Agrega productos");
 
     try {
       setLoading(true);
@@ -104,24 +99,20 @@ export default function CreateInvoice() {
         date,
         paymentMethod,
       };
-     
 
       const res = await API.post("/invoices", payload);
 
       const invoiceNumber = res.data.invoiceNumber;
-      
-     toast.success(`Factura ${invoiceNumber} creada exitosamente 🎉`);
+
+      toast.success(`Factura ${invoiceNumber} creada exitosamente 🎉`);
 
       // 🔥 REDIRECCIÓN
       setTimeout(() => {
         navigate("/dashboard");
       }, 1200);
-
     } catch (error) {
       console.error(error);
-      toast.error(
-        error.response?.data?.msg || "Error al crear la factura"
-      );
+      toast.error(error.response?.data?.msg || "Error al crear la factura");
     } finally {
       setLoading(false);
     }
@@ -130,7 +121,6 @@ export default function CreateInvoice() {
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
       <div className="max-w-6xl mx-auto">
-
         {/* HEADER */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mb-6">
           <div className="flex justify-between">
@@ -149,7 +139,6 @@ export default function CreateInvoice() {
 
         {/* CLIENTE + FACTURA */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
-
           <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
             <label className="text-sm text-gray-500">Cliente</label>
 
@@ -168,11 +157,21 @@ export default function CreateInvoice() {
 
             {selectedClient && (
               <div className="mt-4 text-sm space-y-1 text-gray-600 dark:text-gray-300">
-                <p><strong>Nombre:</strong> {selectedClient.name}</p>
-                <p><strong>Email:</strong> {selectedClient.email}</p>
-                <p><strong>Teléfono:</strong> {selectedClient.phone || "N/A"}</p>
-                <p><strong>ID:</strong> {selectedClient.identification || "N/A"}</p>
-                <p><strong>Dirección:</strong> {selectedClient.address || "N/A"}</p>
+                <p>
+                  <strong>Nombre:</strong> {selectedClient.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {selectedClient.email}
+                </p>
+                <p>
+                  <strong>Teléfono:</strong> {selectedClient.phone || "N/A"}
+                </p>
+                <p>
+                  <strong>ID:</strong> {selectedClient.identification || "N/A"}
+                </p>
+                <p>
+                  <strong>Dirección:</strong> {selectedClient.address || "N/A"}
+                </p>
               </div>
             )}
           </div>
@@ -234,6 +233,13 @@ export default function CreateInvoice() {
             </thead>
 
             <tbody>
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center py-6 text-gray-400">
+                    No hay productos agregados
+                  </td>
+                </tr>
+              )}
               {items.map((item, index) => {
                 const product = products.find((p) => p._id === item.productId);
 
@@ -294,7 +300,6 @@ export default function CreateInvoice() {
             )}
           </button>
         </div>
-
       </div>
     </div>
   );
