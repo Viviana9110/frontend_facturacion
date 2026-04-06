@@ -37,6 +37,10 @@ export default function Dashboard() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // PAGINATION
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const fetchInvoices = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -95,6 +99,19 @@ export default function Dashboard() {
     return data;
   }, [invoices, range, search, sort]);
 
+  // PAGINATION
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+  const paginatedInvoices = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, range, sort]);
+
   const total = filtered.reduce((acc, i) => acc + (i.total || 0), 0);
   const count = filtered.length;
   const avg = count ? total / count : 0;
@@ -131,51 +148,6 @@ export default function Dashboard() {
   return (
     <div className="px-4 py-6 sm:p-6 bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100">
 
-      {/* HEADER STICKY */}
-      <div className="sticky top-0 z-10 backdrop-blur bg-gray-50/70 dark:bg-gray-950/70 pb-6 mb-6 pl-12 lg:pl-0">
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
-          <div>
-            <h1 className="text-3xl font-semibold">Dashboard</h1>
-            <p className="text-gray-500 text-sm">
-              Análisis avanzado de tu negocio
-            </p>
-          </div>
-
-          <div className="relative w-full lg:w-72">
-            <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-
-            <input
-              placeholder="Buscar cliente..."
-              className="w-full pl-9 pr-4 py-2 rounded-xl border bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* FILTROS */}
-        <div className="flex flex-wrap gap-2 w-full md:w-auto bg-gray-200 dark:bg-gray-800 p-1 rounded-xl mt-2">
-          {["today", "7d", "30d"].map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm transition ${
-                range === r
-                  ? "bg-indigo-600 text-white"
-                  : "text-gray-600"
-              }`}
-            >
-              {r === "today" && "Hoy"}
-              {r === "7d" && "7 días"}
-              {r === "30d" && "30 días"}
-            </button>
-          ))}
-        </div>
-
-      </div>
-
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
 
@@ -201,27 +173,8 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* CHART */}
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl border mb-8 overflow-x-auto mt-4">
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip formatter={(v) => formatCOP(v)} />
-            <Line
-              type="monotone"
-              dataKey="total"
-              stroke="#6366f1"
-              strokeWidth={3}
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
       {/* TABLA */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border mt-6">
 
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Historial de facturas</h2>
@@ -249,48 +202,77 @@ export default function Dashboard() {
             No hay facturas en este periodo
           </div>
         ) : (
-          <div className="overflow-x-auto">
-             <table className="w-full text-sm min-w-[600px]">
-            <tbody>
-              {filtered.map((inv) => (
-                <tr
-                  key={inv._id}
-                  className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                >
-                  <td className="p-3 font-semibold text-indigo-600">
-                    {inv.dianNumber || "Sin número"}
-                  </td>
-
-                  <td className="p-3">{inv.client?.name}</td>
-
-                  <td className="p-3 font-medium">{formatCOP(inv.total)}</td>
-
-                  <td className="p-3">
-                    {new Date(inv.createdAt).toLocaleDateString()}
-                  </td>
-
-                  <td className="p-3">
-                    <button
-                      onClick={() => {
-                        setSelectedInvoice(inv);
-                        setIsModalOpen(true);
-                      }}
-                      className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <tbody>
+                  {paginatedInvoices.map((inv) => (
+                    <tr
+                      key={inv._id}
+                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                     >
-                      <Eye size={16} />
-                      Ver
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-         
+                      <td className="p-3 font-semibold text-indigo-600">
+                        {inv.dianNumber || "Sin número"}
+                      </td>
+
+                      <td className="p-3">{inv.client?.name}</td>
+
+                      <td className="p-3 font-medium">{formatCOP(inv.total)}</td>
+
+                      <td className="p-3">
+                        {new Date(inv.createdAt).toLocaleDateString()}
+                      </td>
+
+                      <td className="p-3">
+                        <button
+                          onClick={() => {
+                            setSelectedInvoice(inv);
+                            setIsModalOpen(true);
+                          }}
+                          className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+                        >
+                          <Eye size={16} />
+                          Ver
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* PAGINATION CONTROLS */}
+            <div className="flex justify-between items-center mt-4">
+
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.max(p - 1, 1))
+                }
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50"
+              >
+                Anterior
+              </button>
+
+              <span className="text-sm text-gray-500">
+                Página {currentPage} de {totalPages}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(p + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border rounded-lg disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+
+            </div>
+          </>
         )}
       </div>
 
-      {/* MODAL ANIMADO */}
       <AnimatePresence>
         {isModalOpen && (
           <Modal
