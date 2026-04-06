@@ -106,9 +106,11 @@ export default function CreateInvoice() {
       };
      
 
-      await API.post("/invoices", payload);
+      const res = await API.post("/invoices", payload);
 
-      toast.success("Factura creada exitosamente 🎉");
+      const invoiceNumber = res.data.invoiceNumber;
+      
+     toast.success(`Factura ${invoiceNumber} creada exitosamente 🎉`);
 
       // 🔥 REDIRECCIÓN
       setTimeout(() => {
