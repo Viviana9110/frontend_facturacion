@@ -13,10 +13,11 @@ export default function Layout() {
   const hideSidebar = location.pathname === "/";
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="flex min-h-screen w-full overflow-x-hidden bg-gray-50 dark:bg-gray-950">
+      
       {!hideSidebar && <Sidebar />}
 
-      <div className="flex-1 lg:ml-64">
+      <main className="flex-1 w-full lg:ml-64 overflow-x-hidden">
         <Toaster richColors position="top-right" />
 
         <Routes>
@@ -26,7 +27,8 @@ export default function Layout() {
           <Route path="/products" element={<Products />} />
           <Route path="/create" element={<CreateInvoice />} />
         </Routes>
-      </div>
+      </main>
+
     </div>
   );
 }

@@ -177,7 +177,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
 
         <KPI icon={<DollarSign />} title="Ingresos" value={formatCOP(total)}>
           <span
@@ -202,7 +202,7 @@ export default function Dashboard() {
       </div>
 
       {/* CHART */}
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl border mb-8 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl border mb-8 overflow-x-auto mt-4">
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
