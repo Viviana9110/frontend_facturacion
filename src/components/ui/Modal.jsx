@@ -22,7 +22,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
               {title}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Completa la información del producto
+              Completa la información
             </p>
           </div>
 
