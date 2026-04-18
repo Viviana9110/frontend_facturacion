@@ -1,16 +1,65 @@
-# React + Vite
+# 🧾 Frontend Facturación - Reto Factus
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 Descripción
+Aplicación frontend desarrollada como interfaz de usuario para el sistema de facturación del reto Factus.
 
-Currently, two official plugins are available:
+Permite gestionar clientes, productos y facturas mediante una experiencia visual clara, moderna y fácil de usar, consumiendo una API REST desarrollada en Node.js.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🎯 Objetivo del proyecto
+Construir una interfaz que permita interactuar con el sistema de facturación de forma intuitiva, facilitando la creación y consulta de información.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 💡 Funcionalidades principales
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Crear y visualizar facturas  
+- Registrar clientes  
+- Gestionar productos  
+- Interfaz amigable para interacción con la API  
+- Consumo de endpoints REST  
+
+---
+
+## ⚙️ Tecnologías utilizadas
+
+- React  
+- JavaScript  
+- Tailwind CSS
+- Axios / Fetch API  
+
+---
+
+## 🧱 Estructura del proyecto
+
+- `components/` → componentes reutilizables  
+- `pages/` → vistas principales  
+- `services/` → conexión con la API  
+- `App.jsx` → componente principal  
+- `main.jsx` → punto de entrada  
+
+---
+
+## 🔗 Integración con backend
+
+Este proyecto consume la API desarrollada en:
+
+👉 https://github.com/Viviana9110/backend_facturacion
+
+Permitiendo la comunicación entre frontend y backend para la gestión completa del sistema.
+
+---
+
+## ⚙️ Instalación y ejecución
+
+1. Clonar el repositorio:
+
+```bash
+git clone https://github.com/Viviana9110/frontend_facturacion.git
+
+2. Instalar dependencias 
+npm install
+
+3. Ejecutar el proyecto
+npm run dev
